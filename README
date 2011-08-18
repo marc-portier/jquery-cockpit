@@ -1,0 +1,13 @@
+This JQuery plugin provides a html5-canvas based dashboard-meter for visualizing typical key values surrounding tasks.
+
+The meter is capable of visualizing 3 dimensions:
+
+  * SIZE/TOTAL/AMOUNT: some absolute figure
+    (visualized through the size of the disk)
+
+  * PERCENTAGE: which part of that total is left to do
+    (visualized through partial overlay disk)
+
+  * URGENCY: by when the 100% is due
+    (visualized through the color of the background)
+

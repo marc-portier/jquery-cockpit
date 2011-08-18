@@ -1,0 +1,229 @@
+<?xml version="1.0"?>
+<html xmlns:t="http://kauriproject.org/template"
+ t:inherit="module:/templates/layout/layout.xml">
+     
+    <t:init>
+        <t:variable name="selected_menu_name" value="start"/>
+        <t:variable name="title" value="Welkom"/>
+    </t:init>
+    
+    <t:block name="info" >
+      <p>System Version: ${conf('build','build/version')}</p>
+    </t:block>
+ 
+     <t:block name="extra-headers">
+        <t:superBlock/>
+        <script type="text/javascript" src="${static_build_uri}/js/hs2-cockpit.js" />
+        <script type="text/javascript" >
+        ;(function(\$) {
+            \$(document).ready( function() {
+                $('.cockpit canvas, canvas.cockpit').hs2_cockpit();
+            });
+        }(jQuery));
+        </script>
+     </t:block>
+    
+    <t:macro name="cockpit" >
+        <a href="${menu.actions[name].uri}">
+        <canvas height="${dim}" width="${dim}">
+            <t:callMacro name="icon">
+                  <t:parameter name="name" value="${empty menu.actions[name].ico ? name : menu.actions[name].ico}"/>
+                  <t:parameter name="label" value="${label}"/>
+                  <t:parameter name="size"  value="60"/>
+            </t:callMacro>
+        </canvas>
+        </a>
+    </t:macro>
+    
+    <t:block name="content">
+        <div id="quick-in-out">
+          <t:variable name="inout" src="service:/data/viewdata/inout"/>
+          
+          <table class="cockpit data" >
+            <caption>Overzicht</caption>
+            <tbody>
+              <tr>
+                <th>Vertrekken</th><th>Aankomsten</th><th>Kattebellen</th>
+              </tr>
+              <tr>
+                <td><t:callMacro name="cockpit">
+                  <t:parameter name="name"  value="vertrek"/>
+                  <t:parameter name="label" value="Vertrekken"/>
+                  <t:parameter name="dim"  value="300"/>
+                </t:callMacro></td>
+                <td><t:callMacro name="cockpit">
+                  <t:parameter name="name"  value="aankomst"/>
+                  <t:parameter name="label" value="Aankomsten"/>
+                  <t:parameter name="dim"  value="300"/>
+                </t:callMacro></td>
+                <td><t:callMacro name="cockpit">
+                  <t:parameter name="name"  value="kattebel"/>
+                  <t:parameter name="label" value="Kattebellen"/>
+                  <t:parameter name="dim"  value="300"/>
+                </t:callMacro></td>
+              </tr>
+              <tr><th>Laattijdige betalingen</th><th>Verlopen opties</th><th>Wachtrij opportuniteiten</th></tr>              
+              <tr>
+                <td><t:callMacro name="cockpit">
+                  <t:parameter name="name"  value="betaling.voor"/>
+                  <t:parameter name="label" value="Betalingen"/>
+                  <t:parameter name="dim"   value="300"/>
+                </t:callMacro></td>
+                <td><t:callMacro name="cockpit">
+                  <t:parameter name="name"  value="annulatie"/> <!-- TODO beter icoon -->
+                  <t:parameter name="label" value="Vertrekken"/>
+                  <t:parameter name="dim"   value="300"/>
+                </t:callMacro></td>
+                <td><t:callMacro name="cockpit">
+                  <t:parameter name="name"  value="wachtlijst"/>
+                  <t:parameter name="label" value="Wachtlijst"/>
+                  <t:parameter name="dim"  value="300"/>
+                </t:callMacro></td>
+              </tr>
+            </tbody>
+          </table>
+          <hr />
+          <table class="data">
+            <caption>Aankomsten &amp; Vertrekken</caption>
+            <tbody>
+              <tr>
+               <th class="first" rowspan="3"></th>
+               <th colspan="4">Op datum: ${inout.meta.day.date}</th>
+               <th colspan="4">In periode: ${inout.meta.period.fromdate} - ${inout.meta.period.tilldate} </th>
+              </tr>
+              <tr>
+               <th colspan="2">aantal #</th><th colspan="2">saldo €</th>
+               <th colspan="2">aantal #</th><th colspan="2">saldo €</th>
+              </tr>
+              <tr>
+                <th>behandeld</th><th>van totaal</th><th>behandeld</th><th>van totaal</th>
+                <th>behandeld</th><th>van totaal</th><th>behandeld</th><th>van totaal</th>
+              </tr>
+              <t:callMacro name="inout-row">
+                  <t:parameter name="icon"  value="aankomst"/>
+                  <t:parameter name="row"   value="${inout.in}" />
+                  <t:parameter name="uri"   value="${publicUri('service:/main/flow/aankomst.html')}" />
+                  <t:parameter name="label" value="Aankomsten" />
+              </t:callMacro>
+              <t:callMacro name="inout-row">
+                  <t:parameter name="icon"  value="vertrek"/>
+                  <t:parameter name="row"   value="${inout.out}" />
+                  <t:parameter name="uri"   value="${publicUri('service:/main/flow/vertrek.html')}" />
+                  <t:parameter name="label" value="Vertrekken" />
+              </t:callMacro>
+            </tbody>
+          </table>
+        </div>
+        
+        
+        <div id="quick-waitopts">
+          <t:variable name="waitopts" src="service:/data/viewdata/waitopts"/>
+          <table class="data">
+            <caption>Opportuniteiten Wachtlijst &amp; Verlopen Opties</caption>
+            <tbody>
+              <tr>
+               <th class="first" rowspan="2"></th>
+               <th colspan="2">Klant</th>
+               <th colspan="2">Optie</th>
+               <th colspan="3">Reservatie</th>
+              </tr>
+              <tr>
+               <th>Naam</th><th>Contact</th>
+               <th>Sinds</th><th>Vervalt</th>
+               <th>Van</th><th>Tot</th><th>Logies</th>
+              </tr>
+              <t:forEach var="row" in="${waitopts}">
+                <t:callMacro name="waitopts-row">
+                  <t:parameter name="row"   value="${row}" />
+                </t:callMacro>
+              </t:forEach>
+            </tbody>
+          </table>
+        </div>        
+
+        <div id="quick-libre">
+          <table class="data">
+            <caption>Bezetting &amp; Vrije Nachten</caption>
+            <tbody>
+              <tr>
+                <th rowspan="2" class="first icon">
+                  <a href="${publicUri('service:/main/flow/planbord.html')}" >
+		          <t:callMacro name="icon">
+		            <t:parameter name="label" value="Planbord"/>
+		            <t:parameter name="name"  value="planbord"/>
+		            <t:parameter name="size"  value="18" />
+		          </t:callMacro>
+		          </a>
+                </th>
+                <th >Periode 04/01 - 04/02</th>
+                <th colspan="3">Verhuurd</th>
+                <th colspan="4">Vrij</th>
+              </tr>
+              <tr>
+                <th >Type</th>
+                <th ># Logies</th>
+                <th ># Nachten</th>
+                <th >Eerste op</th>
+                <th ># Logies</th>
+                <th ># Nachten</th>
+                <th >Eerste op</th>
+                <th >% Vrij</th>
+              </tr>
+              <tr><th class="first"></th><td>Caravan</td>    
+                <td class="number">10</td><td class="number">208</td><td>20090613</td>
+                <td class="number">2</td><td class="number">10</td><td>20090613</td><td class="percent">4.58</td></tr>
+              <tr><th class="first"></th><td>Chalet</td>     
+                <td class="number">7</td><td class="number">84</td><td>20090314</td>
+                <td class="number">15</td><td class="number">156</td><td>20090613</td><td class="percent">65.00</td></tr>
+              <tr><th class="first"></th><td>Appartement</td>
+                <td class="number">6</td><td class="number">136</td><td>20090110</td>
+                <td class="number">6</td><td class="number">24</td><td>20090613</td><td class="percent">15.00</td></tr>
+              <tr><th class="first"></th><td>3den</td>       
+                <td class="number">4</td><td class="number">18</td><td>20090330</td>
+                <td class="number">6</td><td class="number">42</td><td>20090613</td><td class="percent">70.00</td></tr>
+            </tbody>
+          </table>
+        </div>        
+        
+        
+    </t:block>
+
+    <t:macro name="inout-row">
+      <t:parameter name="row" />
+      <t:parameter name="icon" />
+      <t:parameter name="uri" />
+      <t:parameter name="label" value="${icon}" />
+      <tr>
+        <th class="first icon"><a href="${uri}">
+	      <t:callMacro name="icon">
+            <t:parameter name="label" value="${label}"/>
+            <t:parameter name="name"  value="${icon}"/>
+	        <t:parameter name="size"  value="18" />
+	      </t:callMacro>
+        </a></th>
+        <td class="number">${row.day.counts.done}</td>      <td class="number">${row.day.counts.total}</td>
+        <td class="currency">${row.day.amounts.done}</td>   <td class="currency">${row.day.amounts.total}</td>
+        <td class="number">${row.period.counts.done}</td>   <td class="number">${row.period.counts.total}</td>
+        <td class="currency">${row.period.amounts.done}</td><td class="currency">${row.period.amounts.total}</td>
+      </tr>
+    </t:macro>	    
+
+    <t:macro name="waitopts-row">
+      <t:parameter name="row" />
+      <tr>
+        <th class="first icon"><t:callMacro name="obj-link">
+          <t:parameter name="obj"  value="${row}" />
+        </t:callMacro></th>               
+        <td><t:callMacro name="obj-link">
+          <t:parameter name="obj"  value="${row.customer}" />
+        </t:callMacro></td>               
+        <td>${row.customer.contact}</td> 
+        <td>${row.createdate}</td><td>${row.expiresdate}</td>
+        <td>${row.fromdate}</td><td>${row.tilldate}</td>
+        <td><t:callMacro name="obj-link">
+          <t:parameter name="obj"  value="${row.target}" />
+        </t:callMacro></td>               
+      </tr>
+    </t:macro>      
+  
+</html>
