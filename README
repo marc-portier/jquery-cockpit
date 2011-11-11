@@ -1,13 +1,68 @@
-This JQuery plugin provides a html5-canvas based dashboard-meter for visualizing typical key values surrounding tasks.
+This JQuery plugin provides some dashboard-meters based on html5-canvas for visualizing 
+typical key values in processes. 
 
-The meter is capable of visualizing 3 dimensions:
+
+[1] The Amount-Progress-Urgency Meter
+    For tracking and indicating volme, progress and approaching dead-line for tasks due.
+
+  This meter visualizes the folowing three dimensions:
 
   * SIZE/TOTAL/AMOUNT: some absolute figure
     (visualized through the size of the disk)
 
-  * PERCENTAGE: which part of that total is left to do
-    (visualized through partial overlay disk)
+  * PROGRESS/PERCENTAGE: which part of that total is left to do
+    (visualized through partial overlay disk of what is done)
 
   * URGENCY: by when the 100% is due
     (visualized through the color of the background)
+
+
+  Example use case: Task-list
+     today = 23-01
+     due 23-01, task 0, open
+     due 23-01, task 1, completed
+     due 24-01, task 2, open 
+  
+  Should be fed into the meter as set:
+     {"at": "23-01", "work": "1/3", "slack": "0"}
+  If task 0 completes: 
+     {"at": "23-01", "work": "2/3", "slack": "1"}
+  And the day after:
+     {"at": "24-01", "work": "0/1", "slack": "0"}
+
+
+
+[2] The Exchange Indicator
+    For exhange environments where expected ingest and output can be competing for
+    shared resoures that need to be freed up on the output (leaving) side.
+
+  This indicator tries to visualize the workload, resource-stress and progress of the
+  exchange-process.
+
+  * The workload on "ingest" is indicated through a standing (green) bar, while the 
+    "output" gets a hanging (orange) bar. The total size from bottom of "out" to the
+    top of "in" should be an indication of the full load
+  * Inside this a floating (blue) bar indicates the amount of in/out steps that need to 
+    exchange resources in the process. (This should always be smaller then the smallest 
+    of the two bars)
+  * Progress on the "in" side is visualized by a pale overlay dropping from the top, and 
+    vice-versa an overlay growing from the bottom will indicate how much of the expected
+    "out" steps have completed.
+  * Meanwhile the inner 'resource-exchange' bar will float down into the "out" section as 
+    the congesting resources have been freed up.  Because of this behaviour we get an 
+    indication of congestion stress when the pale progress "in" bar reaches the blue 
+    resource-exchange bar.
+
+
+  Example use case: Hotel arrival and departure on a certain day.
+     arriving today into room 12,13,17,20,23
+       already arrived: 17,23
+     leaving today from room 05,06,17
+       already left: 05,17
+     one exchange room: 17 (already available)
+
+   This case would plot this data-set:
+     { "in": [2,5], "out": [1,3], "exc": [1,2], "title": "mon\n01-08" }
+   Or human readable form:
+     { "in": "2/5", "out": "1/3", "exc": "1/2", "title": "mon\n01-08"  }
 

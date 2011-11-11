@@ -23,6 +23,53 @@
         return $.extend($.extend({}, defs), vals);
     }
 
+
+    // -------------------------------------------------------------------------
+    //
+    // common util functions
+    //
+    // -------------------------------------------------------------------------
+    
+    
+    function toProgressArray(work) {
+        if (work.constructor === String) {
+            work = work.split("/");   
+        } 
+        if (work.constructor === Array && work.length == 1) {
+            work[1] = work[0];
+            work[0] = 0;
+        }
+	    return work;
+    }
+
+    var TIME_RE = /(\d+)\s*([ms]?)/g;
+    function toMillis(time) {
+        var millis = 0;
+        
+        var match;
+        var pattern = TIME_RE;
+        pattern.lastIndex = 0; // just to be sure
+        while ((match = pattern.exec(time)) !== null) {
+            var mult = 1;
+            if (match[2] == "s") {
+                mult = 1000;
+            } else if (match[2] == "m") {
+                mult = 60000;
+            }
+            millis += mult * match[1];
+        }
+        return millis;
+    }
+
+
+
+    // -------------------------------------------------------------------------
+    //
+    // cockipt-meter
+    //
+    // -------------------------------------------------------------------------
+
+    
     jqDefine("cockpit", Cockpit);
     
     function Cockpit($elm, config) {
@@ -34,7 +81,7 @@
         var logo = $("img", $elm).eq(0);
         this.logoUri = (logo) ? logo.attr("src") : "";
         // TODO check trick below: doesn't work on chrome, but does on ffx
-//        this.logo = logo.get(0);
+        // this.logo = logo.get(0);
         
         this.config = jqMerge(Cockpit.config, config);
         this.init();
@@ -57,22 +104,52 @@
     }
     
     for (var i = 0; i< 23; i++) {
-        Cockpit.config["urgency-colors"][i] = "rgba(" + (230 - i*10) + ",0," + i*10 + ",0.7 )";
-//        Cockpit.config["urgency-colors"][i] = "rgba(" + (230 - i*10) + "," + i*10 + ",0,0.7 )";
+        Cockpit.config["urgency-colors"][i] = 
+            "rgba(" + (230 - i*10) + ",0," + i*10 + ",0.7 )";
     }
     
-    Cockpit.prototype.init = function() {
+    function demoData(me) {
+
+    	var data ={}
         var rndCaptions = [ "23-03", "24-04", "06-05", "21-07", "25-08", "30-08", "04-09", "17-09", "30-09", "17-10", "28-10", "01-11", "11-11", "15-11", "21-11", "06-12", "12-12", "24-12", "25-12", "28-12", "31-12", "01-01", "06-01"];
-        var rndUpx = Math.random();
-        this.urgency = Math.floor( rndUpx * this.config["urgency-colors"].length);
-        this.caption = rndCaptions[ Math.floor(rndUpx * rndCaptions.length)];
-        this.volume  = Math.floor( Math.random() * this.config["volume-max"]);  
-        this.percent = Math.floor( Math.random() * this.volume);
-//        this.test();
+        var rndUpx   = Math.random();
+        data.slack   = Math.floor( rndUpx * me.config["urgency-colors"].length);
+        data.at      = rndCaptions[ Math.floor(rndUpx * rndCaptions.length)];
+        var volume  = Math.floor( Math.random() * me.config["volume-max"]);  
+        var percent = Math.floor( Math.random() * volume);
+        data.work   = percent  + "/" + volume;
+
+        return data;
+    }
+
+    Cockpit.prototype.init = function() {
+
+        // check data
+        var data = this.$elm.data("meter");
+        if (data == "demo") {
+            data = demoData(this);
+        }
+        this.plot(data);
+
+        // check refresh
+        var refresh = this.$elm.data("refresh");
+        var rate = toMillis(refresh.each);
+        var uri = refresh.uri;
+    }
+
+    Cockpit.prototype.plot = function(data) {
+
+        this.urgency = data.slack;
+        this.caption = data.at;
+        var work     = toProgressArray(data.work);
+        
+        this.volume  = work[1];
+        this.percent = work[0];
         this.draw();
     }
     
-    Cockpit.prototype.test = function() {
+
+    Cockpit.prototype.debug = function() {
         this.gc.save();
         try {
             this.gc.font= "20px Optimer";
@@ -220,6 +297,14 @@
             this.gc.restore();
         }
     }
+    
+    
+    
+    // -------------------------------------------------------------------------
+    //
+    // Graphics convenience functions drawing certain shapes & used here and there.
+    //
+    // -------------------------------------------------------------------------
     
     var GCLIB = {};
     /** Draws a centered (ie at 0,0) circle/pie with the specified radius and width of the pie in radians. */

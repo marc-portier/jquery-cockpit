@@ -8,31 +8,23 @@
   <SCRIPT TYPE="text/javascript" >
     ;(function($) {
         $(document).ready( function() {
-            $('.cockpit canvas, canvas.cockpit').cockpit();
+            $('.cockpit-meter canvas, canvas.cockpit-meter').cockpit();
         });
     }(jQuery));
   </SCRIPT>
   
 </HEAD>
 <BODY>
-  <CANVAS WIDTH="300" HEIGHT="300" CLASS="cockpit">
-    <IMG WIDTH="60" HEIGHT="60" ALT="optional icon" SRC="./img/icon.png"/>
+  <A HREF="#"><CANVAS WIDTH="300" HEIGHT="300" CLASS="cockpit-meter" 
+	  DATA-METER='{"at": "24-04", "work": "12/21", "slack": "3"}' 
+	  DATA-REFRESH='{"each": "30s50", "uri": "test-data.js"}'>
+      <IMG WIDTH="60" HEIGHT="60" ALT="optional icon" SRC="./img/icon.png"/>
+  </CANVAS></A>
+
+  <CANVAS WIDTH="300" HEIGHT="300" CLASS="cockpit-meter" CLASS="cockpit-meter" 
+          DATA-METER="demo" 
+          DATA-REFRESH='{"each": "2m30s"}'>
   </CANVAS>
 
-
-  <!-- TODO provide some mechanism to inject values -->
-  <TABLE>
-    <CAPTION>Samples</CAPTION>
-    <TBODY>
-      <TR>
-        <TH><UL><LI>Size</LI><LI>Ratio</LI><LI>Urgency</LI></UL></TH>
-        <TH>Meter</TH>
-      </TR>
-      <TR>
-        <TD ClASS="data"><UL><LI CLASS="size">25</LI><LI CLASS="ratio">30%</LI><LI CLASS="urgency">2011-10-01</LI></UL></TD>
-        <TD CLASS="meter"></TD>
-      </TR>
-    </TBODY>
-  </TABLE>
 </BODY>
 </HTML>
