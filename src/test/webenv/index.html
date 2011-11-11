@@ -8,7 +8,8 @@
   <SCRIPT TYPE="text/javascript" >
     ;(function($) {
         $(document).ready( function() {
-            $('.cockpit-meter canvas, canvas.cockpit-meter').cockpit();
+            $('canvas.cockpit-meter').cockpit();
+            $('canvas.exchange-indicator').exchange();
         });
     }(jQuery));
   </SCRIPT>
@@ -16,15 +17,31 @@
 </HEAD>
 <BODY>
   <A HREF="#"><CANVAS WIDTH="300" HEIGHT="300" CLASS="cockpit-meter" 
-	  DATA-METER='{"at": "24-04", "work": "12/21", "slack": "3"}' 
-	  DATA-REFRESH='{"each": "30s50", "uri": "test-data.js"}'>
+	  DATA-METER='{"at": "24-04", "work": "12/21", "slack": "10"}' 
+	  DATA-REFRESH='{"each": "20s", "uri": "data/sample-cockpit.js"}'>
       <IMG WIDTH="60" HEIGHT="60" ALT="optional icon" SRC="./img/icon.png"/>
   </CANVAS></A>
 
-  <CANVAS WIDTH="300" HEIGHT="300" CLASS="cockpit-meter" CLASS="cockpit-meter" 
-          DATA-METER="demo" 
-          DATA-REFRESH='{"each": "2m30s"}'>
+  <CANVAS WIDTH="300" HEIGHT="300" CLASS="cockpit-meter"
+      DATA-METER="demo" 
+      DATA-REFRESH='{"each": "30s"}'>
   </CANVAS>
+  
+  <HR />
+  
+  <CANVAS WIDTH="200" HEIGHT="600" CLASS="exchange-indicator" 
+      DATA-METER='{"in": "10/18", "out": "4/8", "ex": "4/6", "title": "ma\n12-03"}' 
+      DATA-REFRESH='{"each": "30s", "uri": "data/sample-exchange.js"}'>
+  </CANVAS>
+  <CANVAS WIDTH="200" HEIGHT="600" CLASS="exchange-indicator" 
+          DATA-METER="demo" 
+          DATA-REFRESH='{"each": "30s"}'>
+  </CANVAS>
+  <CANVAS WIDTH="200" HEIGHT="600" CLASS="exchange-indicator" 
+          DATA-METER="demo" 
+          DATA-REFRESH='{"each": "30s"}'>
+  </CANVAS>
+  
 
 </BODY>
 </HTML>

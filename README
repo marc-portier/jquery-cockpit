@@ -31,27 +31,31 @@ typical key values in processes.
      {"at": "24-01", "work": "0/1", "slack": "0"}
 
 
+  Data-feed and configuration through data- attributes
+     @data-meter='{"at": title, "work": percent/volume, "slack": slack}'
+     @data-refresh='{"each": "10m15s957", "uri": uri}'
+
 
 [2] The Exchange Indicator
-    For exhange environments where expected ingest and output can be competing for
-    shared resoures that need to be freed up on the output (leaving) side.
+    For exhange environments where expected ingest and output can be competing 
+    for shared resoures that need to be freed up on the output (leaving) side.
 
-  This indicator tries to visualize the workload, resource-stress and progress of the
-  exchange-process.
+  This indicator tries to visualize the workload, resource-stress and progress 
+  of the exchange-process.
 
-  * The workload on "ingest" is indicated through a standing (green) bar, while the 
-    "output" gets a hanging (orange) bar. The total size from bottom of "out" to the
-    top of "in" should be an indication of the full load
-  * Inside this a floating (blue) bar indicates the amount of in/out steps that need to 
-    exchange resources in the process. (This should always be smaller then the smallest 
-    of the two bars)
-  * Progress on the "in" side is visualized by a pale overlay dropping from the top, and 
-    vice-versa an overlay growing from the bottom will indicate how much of the expected
-    "out" steps have completed.
-  * Meanwhile the inner 'resource-exchange' bar will float down into the "out" section as 
-    the congesting resources have been freed up.  Because of this behaviour we get an 
-    indication of congestion stress when the pale progress "in" bar reaches the blue 
-    resource-exchange bar.
+  * The workload on "ingest" is indicated through a standing (green) bar, while
+    the "output" gets a hanging (orange) bar. The total size from bottom of "out"
+    to the top of "in" should be an indication of the full load.
+  * Inside this a floating (blue) bar indicates the amount of in/out steps that
+    need to exchange resources in the process. (This should always be smaller
+    then the smallest of the two bars)
+  * Progress on the "in" side is visualized by a pale overlay dropping from the
+    top, and vice-versa an overlay growing from the bottom will indicate how much
+    of the expected "out" steps have completed.
+  * Meanwhile the inner 'resource-exchange' bar will float down into the "out"
+    section as the congesting resources have been freed up.  Because of this
+    behaviour we get an indication of congestion stress when the pale progress
+    "in" bar reaches the blue resource-exchange bar.
 
 
   Example use case: Hotel arrival and departure on a certain day.
@@ -62,7 +66,7 @@ typical key values in processes.
      one exchange room: 17 (already available)
 
    This case would plot this data-set:
-     { "in": [2,5], "out": [1,3], "exc": [1,2], "title": "mon\n01-08" }
+     { "in": [2,5], "out": [1,3], "ex": [1,2], "title": "mon\n01-08" }
    Or human readable form:
-     { "in": "2/5", "out": "1/3", "exc": "1/2", "title": "mon\n01-08"  }
+     { "in": "2/5", "out": "1/3", "ex": "1/2", "title": "mon\n01-08"  }
 
