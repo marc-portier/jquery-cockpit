@@ -87,6 +87,10 @@
         }
         me.plot(data);
 
+        MeterBase.initRefresh(me, TheMeter, demo);
+    }
+
+    MeterBase.initRefresh = function(me, TheMeter, demo) {
         // check refresh
         var refresh = me.$elm.data("refresh");
         var rate = toMillis(refresh.each);
@@ -113,6 +117,21 @@
         //register timer for updater.
         me.interval = setInterval( updater, rate);
     }
+    
+    MeterBase.loadIcon = function(me, name, img, uri) {
+        if (!uri) { // nothing to load
+            return;
+        }
+        //else load it
+        me[name] = null;
+        var logo = new Image();
+
+        logo.onload = function() {
+            me[name] = logo;
+            me.iconLoaded(name);
+        }
+        logo.src = uri;
+    }
 
     MeterBase.stop = function(me) {
         if (me.interval)
@@ -130,9 +149,9 @@
         
         me.gc.save();
         try {
-            me.gc.fillStyle = me.config["background-fill"];
+            me.gc.fillStyle   = me.config["background-fill"];
             me.gc.strokeStyle = me.config["background-stroke"];
-            me.gc.lineWidth = me.config["background-border"];
+            me.gc.lineWidth   = me.config["background-border"];
             me.gc.translate(me.width/2, me.height/2); // center
             GCLIB.roundedRect(me.gc, me.width - 2*inset, 
                               me.height - 2*inset, round);
@@ -180,9 +199,9 @@
     
     function Cockpit($elm, config) {
         var logo = $("img", $elm).eq(0);
-        this.logoUri = (logo) ? logo.attr("src") : "";
-        // TODO check trick below: doesn't work on chrome, but does on ffx
-        // this.logo = logo.get(0);
+        var logoUri = (logo) ? logo.attr("src") : "";
+        
+        MeterBase.loadIcon(this, "logo", logo, logoUri);
         
         this.config = jqMerge(Cockpit.config, config);
         MeterBase.init(this, Cockpit, $elm);
@@ -215,11 +234,10 @@
 
     	var data ={};
         var rndCaptions = [ "23-03", "24-04", "06-05", "21-07", "25-08",
-         "30-08", "04-09", "17-09", "30-09", "17-10", "28-10", "01-11", "11-11",
-         "15-11", "21-11", "06-12", "12-12", "24-12", "25-12", "28-12","31-12"];
-        var rndUpx   = Math.random();
-        data.slack   = Math.floor( rndUpx * me.config["urgency-colors"].length);
-        data.at      = rndCaptions[ Math.floor(rndUpx * rndCaptions.length)];
+            "15-11", "21-11", "06-12", "12-12", "24-12", "25-12", "28-12"];
+        var rndUpx  = Math.random();
+        data.slack  = Math.floor( rndUpx * me.config["urgency-colors"].length);
+        data.title  = rndCaptions[ Math.floor(rndUpx * rndCaptions.length)];
         var volume  = Math.floor( Math.random() * me.config["volume-max"]);  
         var percent = Math.floor( Math.random() * volume);
         data.work   = percent  + "/" + volume;
@@ -233,9 +251,8 @@
     }
 
     Cockpit.prototype.plot = function(data) {
-
         this.urgency = data.slack;
-        this.caption = data.at;
+        this.caption = data.title;
         var work     = toProgressArray(data.work);
         
         this.volume  = work[1];
@@ -282,26 +299,20 @@
         if (this.logo) {
             var size = this.config["logo-size"];
             var offset = this.config["logo-offset"] + this.config["inset"];
-            this.gc.save();
-                this.gc.translate(offset, offset);
-                this.gc.drawImage(this.logo,0,0, size, size);
-            this.gc.restore();
+            var gc = this.gc;
+            gc.save();
+            try {
+                gc.translate(offset, offset);
+                GCLIB.image(gc, this.logo, size, size);
+            } finally {
+                gc.restore();
+            }
             return;
         }
-        
-        //else no logo available, let's load it
-        if (!this.logoUri) 
-            return;
-        //else load it
-        this.logo = null;
-        var logo = new Image();
-        var me = this;
-
-        logo.onload = function() {
-            me.logo = logo;
-            me.drawLogo();
-        }
-        logo.src = this.logoUri;
+    }
+    
+    Cockpit.prototype.iconLoaded = function(name) {
+        this.drawLogo();
     }
     
     Cockpit.prototype.drawPie = function() {
@@ -375,13 +386,12 @@
     jqDefine("exchange", ExchangeIndicator);
     
     function ExchangeIndicator($elm, config) {
-
-        var icon = {};
-        var iconUri = {};
+        var me = this;
         ExchangeIndicator.$ROLES.each(function() {
             var n = this;
-            icon[n] = $("img." + n, $elm).eq(0);
-            iconUri[n] = icon[n] ? icon[n].attr("src") : "";
+            var icon = $("img." + n, $elm).eq(0);
+            var iconUri = icon ? icon.attr("src") : "";
+            MeterBase.loadIcon(me, "icon_" + n, icon, iconUri);
         });
         
         this.config = jqMerge(ExchangeIndicator.config, config);
@@ -421,9 +431,9 @@
 
     	var data ={};
         var titles = [ "ma\n23-03", "di\n24-04", "wo\n06-05", "do\n21-07",
-         "vr\n25-08", "za\n30-08", "zo\n04-09", "ma\n17-09", "di\n30-09",
-         "wo\n17-10", "do\n28-10", "vr\n01-11", "za\n11-11", "zo\n15-11",
-         "ma\n21-11", "di\n06-12", "wo\n12-12", "do\n24-12", "vr\n25-12"];
+            "vr\n25-08", "za\n30-08", "zo\n04-09", "ma\n17-09", "di\n30-09",
+            "wo\n17-10", "do\n28-10", "vr\n01-11", "za\n11-11", "zo\n15-11",
+            "ma\n21-11", "di\n06-12", "wo\n12-12", "do\n24-12", "vr\n25-12"];
         var titleNdx = Math.floor(Math.random() * titles.length);
         data.title  = titles[ titleNdx ];
         var inVol   = Math.floor( Math.random() * me.config["volume-max"]);  
@@ -457,17 +467,101 @@
         MeterBase.clear(this);
         MeterBase.drawBackground(this);
         MeterBase.drawCaption(this);
+        
+        //calculations
+        this.logosize = this.config["logo-size"];
+        this.inset = this.config["inset"];
+        var offset = this.config["logo-offset"] + this.inset * 2;
+        var w = this.width  - (offset + this.inset * 2 + this.logosize/2);
+        var h = this.height - (offset + this.inset * 2);
+        var grid = w/8;
+        var unit = h/this.config["volume-max"];
+
+        this.chart = {
+            t: offset + this.logosize,       //top
+            r: offset + w,                   //right
+            b: offset + h,                   //bottom
+            l: offset + this.logosize,       //left
+            w: w,                            //width
+            h: h,                            //height
+            c: offset + this.logosize + w/2, //center
+            m: offset + h/2,                 //middle
+            g: grid,
+            u: unit
+        };
+        
         this.drawAxis();
+        this.drawChart();
     }
     
     ExchangeIndicator.prototype.drawAxis = function() {
         var gc = this.gc;
         gc.save();
         try {
+            //TODO nice to have gradients from ex-to-in and ex-to-out colors
+            gc.strokeStyle = this.config["ex-stroke"];
+            gc.lineWidth = this.config["grid-border"];
+            
+            gc.beginPath();
+                gc.moveTo(this.chart.l - this.logosize/2, 
+                          this.chart.t );
+                gc.lineTo(this.chart.l - this.logosize/2,
+                          this.chart.m - this.logosize/2);
+                gc.moveTo(this.chart.l - this.logosize/2,
+                          this.chart.m + this.logosize/2);
+                gc.lineTo(this.chart.l - this.logosize/2, 
+                          this.chart.b - this.logosize);
+                gc.moveTo(this.chart.l, this.chart.m );
+                gc.lineTo(this.chart.r, this.chart.m);
+                          
+            gc.closePath();  
+            gc.stroke();
+            
+            // set icons
+            gc.translate(this.chart.l - this.logosize, 
+                         this.chart.t - this.logosize);
+            if (this.icon_in) {
+                GCLIB.image(gc, this.icon_in, this.logosize, this.logosize);
+            }
+            gc.translate(0, this.chart.h/2 - this.logosize/2);
+            if (this.icon_ex) {
+                GCLIB.image(gc, this.icon_ex, this.logosize, this.logosize);
+            }
+            gc.translate(0, this.chart.h/2 - this.logosize/2);
+            if (this.icon_out) {
+                GCLIB.image(gc, this.icon_out, this.logosize, this.logosize);
+            }
+            
         } finally {
             gc.restore();
         }
     }    
+    
+    ExchangeIndicator.prototype.drawChart = function(name) {
+        var gc = this.gc;
+        gc.save();
+        try {
+        
+        
+    
+        } finally {
+            gc.restore();
+        }
+    }
+    
+    
+    ExchangeIndicator.prototype.iconLoaded = function(name) {
+        this["loaded_" + name] = true;
+        var all = true;
+        var me = this;
+        ExchangeIndicator.$ROLES.each(function() {
+            var n = this;
+            all = all && me["loaded_icon_" + n];
+        });
+        if (all) {
+            this.draw();
+        }
+    }
     
     ExchangeIndicator.prototype.debug = function() {
         var gc = this.gc;
@@ -543,5 +637,10 @@
                 gc.lineTo(-w,  h);
             }
         gc.closePath();
+    }
+    
+    
+    GCLIB.image = function(gc, img, width, height) {
+        gc.drawImage( img, 0, 0, width, height);
     }
 })(jQuery);
