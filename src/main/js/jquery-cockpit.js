@@ -278,25 +278,6 @@
         this.drawPie();
     }
     
-    Cockpit.prototype.drawBackground = function() {
-        var round = this.config["round"];
-        var inset = this.config["inset"];
-        
-        this.gc.save();
-        try {
-            this.gc.fillStyle = this.config["background-fill"];
-            this.gc.strokeStyle = this.config["background-stroke"];
-            this.gc.lineWidth = this.config["background-border"];
-            this.gc.translate(this.width/2, this.height/2); // center
-            GCLIB.roundedRect(this.gc, this.width - 2*inset, 
-                              this.height - 2*inset, round);
-            this.gc.stroke();
-            this.gc.fill();
-        } finally {
-            this.gc.restore();
-        }
-    }
-    
     Cockpit.prototype.drawLogo = function() {
         if (this.logo) {
             var size = this.config["logo-size"];
@@ -476,7 +457,17 @@
         MeterBase.clear(this);
         MeterBase.drawBackground(this);
         MeterBase.drawCaption(this);
+        this.drawAxis();
     }
+    
+    ExchangeIndicator.prototype.draw = function() {
+        var gc = this.gc;
+        gc.save();
+        try {
+        } finally {
+            gc.restore();
+        }
+    }    
     
     ExchangeIndicator.prototype.debug = function() {
         var gc = this.gc;
