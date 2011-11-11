@@ -460,7 +460,7 @@
         this.drawAxis();
     }
     
-    ExchangeIndicator.prototype.draw = function() {
+    ExchangeIndicator.prototype.drawAxis = function() {
         var gc = this.gc;
         gc.save();
         try {
