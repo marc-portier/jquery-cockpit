@@ -227,14 +227,14 @@
     }
     
     Cockpit.config = {
-        "font"              : "50px Arial",
+        "font"              : "32px Arial",
         "text-color"        : "rgba(0, 0, 0, 1.0)",
-        "logo-size"         :  60,
+        "logo-size"         :  40,
         "logo-offset"       :  10,
-        "caption-offset"    :  70,
+        "caption-offset"    :  50,
         "caption-linespace" :  50,
         "inset"             :   5,
-        "round"             :   0.25, //25%
+        "round"             : "20px",
         "background-fill"   : "rgba(200,200,100, 0.5)",
         "background-stroke" : "rgba(200,200,100, 0.8)",
         "background-border" :   0,
@@ -420,12 +420,12 @@
     ExchangeIndicator.config = {
         "font"              : "24px Arial",
         "text-color"        : "rgba(0, 0, 0, 1.0)",
-        "logo-size"         :  60,
+        "logo-size"         :  40,
         "logo-offset"       :   0,
         "caption-offset"    :  28,
         "caption-linespace" :  24,
         "inset"             :   5,
-        "round"             : "25%",
+        "round"             : "20px",
         "chart-round"       : "10px",
         "background-fill"   : "rgba(200,200,100, 0.5)",
         "background-stroke" : "rgba(200,200,100, 0.8)",
@@ -435,12 +435,15 @@
         "grid-border"       :   1,
         "grid-style"        : "dashes", //TODO check if we can do this?
         "in-fill"           : "rgba(138,226, 52, 0.5)",
+        "in-text"           : "rgba(138,226, 52, 1  )",
         "in-stroke"         : "rgba(138,226, 52, 0.8)",
         "in-border"         :   2,
         "ex-fill"           : "rgba(114,159,207, 0.5)",
+        "ex-text"           : "rgba(114,159,207, 1  )",
         "ex-stroke"         : "rgba(114,159,207, 0.8)",
         "ex-border"         :   2,
         "out-fill"          : "rgba(252,175, 62, 0.5)",
+        "out-text"          : "rgba(252,175, 62, 1  )",
         "out-stroke"        : "rgba(252,175, 62, 0.8)",
         "out-border"        :   2,
         "done-fill"         : "rgba(255,255,255, 0.5)",
@@ -599,6 +602,22 @@
             gc.restore();
         }
     }
+
+    ExchangeIndicator.drawText = function( me, style, text, at) {        
+        var gc = me.gc;
+        gc.save();
+        try {
+            gc.font= this.config["font"];
+            gc.fillStyle = me.config[style + "-text"];
+
+            gc.textAlign = "center";
+            gc.textBaseline = "bottom";
+            gc.translate(at.x,at.y);
+            gc.fillText(text, 0, 0);
+        } finally {
+            gc.restore();
+        }
+    }
     
     ExchangeIndicator.prototype.drawChart = function(name) {
     
@@ -646,6 +665,30 @@
                 b: this.chart.m - (this.in_volume - this.in_done)*this.chart.u,
                 l: this.chart.l + this.chart.g,
                 rad: round
+            });
+        }
+        
+        
+        // texts
+        if (this.in_volume - this.in_done > 0 ) {
+            ExchangeIndicator.drawText(this, "in", 
+                this.in_volume-this.in_done, {
+                x: (this.chart.c + this.chart.l)/2,
+                y: this.chart.b + this.logosize
+            });
+        }
+        if (this.ex_volume - this.ex_done > 0 ) {
+            ExchangeIndicator.drawText(this, "ex", 
+                this.ex_volume-this.ex_done, {
+                x: this.chart.c,
+                y: this.chart.b + this.logosize
+            });
+        }
+        if (this.in_volume - this.in_done > 0 ) {
+            ExchangeIndicator.drawText(this, "out", 
+                this.out_volume-this.out_done, {
+                x: (this.chart.c + this.chart.r)/2,
+                y: this.chart.b + this.logosize
             });
         }
     }
