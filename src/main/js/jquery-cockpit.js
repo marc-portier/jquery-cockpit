@@ -32,7 +32,7 @@
     
     
     function toProgressArray(work) {
-        if (!work) return [0,1];
+        if (!work) return [0,0];
         if (work.constructor === String) {
             work = work.split("/");   
         } 
@@ -98,7 +98,7 @@
         me.width  = $elm.width();
 
         // check data
-        var data = me.$elm.data("meter");
+        var data = me.$elm.data("meter") || {};
         var demo = false;
         if (data == "demo") {
             data = TheMeter.demoData(me);
@@ -112,9 +112,12 @@
     MeterBase.initRefresh = function(me, TheMeter, demo) {
         // check refresh
         var refresh = me.$elm.data("refresh");
-        var rate = toMillis(refresh.each);
+        if (!refresh) {
+            return;
+        }
         
-        if (!refresh || rate <= 0) {
+        var rate = toMillis(refresh.each);
+        if (rate <= 0) {
             return; // no refresh
         }
         // else init refresh
@@ -270,12 +273,12 @@
     }
 
     Cockpit.prototype.plot = function(data) {
-        this.urgency = data.slack;
-        this.caption = data.title;
+        this.urgency = data.slack || 0;
+        this.caption = data.title || "";
         var work     = toProgressArray(data.work);
         
-        this.volume  = work[1];
-        this.percent = work[0];
+        this.volume  = work[1] || 0;
+        this.percent = work[0] || 0;
         this.draw();
     }
     
@@ -335,6 +338,8 @@
     }
     
     Cockpit.prototype.drawPie = function() {
+        if (this.volume == 0) return;
+    
         var color = this.config["urgency-colors"][this.urgency];
         var piecolor = this.config["percent-color"];
 
@@ -480,10 +485,10 @@
         ExchangeIndicator.$ROLES.each(function() {
             var n = this;
             var work = toProgressArray(data[n]);
-            me[n+"_volume"] = work[1];
-            me[n+"_done"]   = work[0];
+            me[n+"_volume"] = work[1] || 0;
+            me[n+"_done"]   = work[0] || 0;
         });
-        this.caption = data.title;
+        this.caption = data.title || "";
         this.draw();
     }
 
