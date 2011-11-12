@@ -530,10 +530,13 @@
         var gc = this.gc;
         gc.save();
         try {
-            //TODO nice to have gradients from ex-to-in and ex-to-out colors
             gc.lineWidth = this.config["grid-border"];
-            gc.strokeStyle = this.config["ex-stroke"];
-            
+            var grad = gc.createLinearGradient(0, 0, 0, this.chart.h );
+            grad.addColorStop(0.15, this.config["in-stroke"]);
+            grad.addColorStop(0.50, this.config["ex-stroke"]);
+            grad.addColorStop(0.85, this.config["out-stroke"]);
+            gc.strokeStyle = grad;
+
             gc.beginPath();
                 gc.moveTo(this.chart.l - this.logosize/2, 
                           this.chart.t );
@@ -549,7 +552,7 @@
             gc.stroke();
             
             var y;
-            gc.strokeStyle = this.config["in-stroke"];
+//            gc.strokeStyle = this.config["in-stroke"];
             gc.beginPath();
                 for (y = this.chart.m - gridDy;
                      y >= this.chart.t;
@@ -560,7 +563,7 @@
             gc.closePath();  
             gc.stroke();
 
-            gc.strokeStyle = this.config["out-stroke"];
+//            gc.strokeStyle = this.config["out-stroke"];
             gc.beginPath();
                 for (y = this.chart.m + gridDy;
                      y <= this.chart.b;
