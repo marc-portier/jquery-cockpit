@@ -692,7 +692,7 @@
                 y: this.chart.b + this.logosize
             });
         }
-        if (this.in_volume - this.in_done > 0 ) {
+        if (this.out_volume - this.out_done > 0 ) {
             ExchangeIndicator.drawText(this, "out", 
                 this.out_volume-this.out_done, {
                 x: (this.chart.c + this.chart.r)/2,
