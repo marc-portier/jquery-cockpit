@@ -465,14 +465,25 @@
             "ma\n21-11", "di\n06-12", "wo\n12-12", "do\n24-12", "vr\n25-12"];
         var titleNdx = Math.floor(Math.random() * titles.length);
         data.title  = titles[ titleNdx ];
-        var inVol   = Math.floor( Math.random() * me.config["volume-max"]);  
-        var outVol  = Math.floor( Math.random() * me.config["volume-max"]);
+        var inVol   = Math.floor(Math.random() * (1+ me.config["volume-max"]));  
+        var outVol  = Math.floor(Math.random() * (1+ me.config["volume-max"]));
         // exchange volume at most smallest of in&out volumes
-        var exVol   = Math.floor(Math.random() * Math.min(inVol, outVol));
-        var inDone  = Math.floor( Math.random() * inVol);
-        var outDone = Math.floor( Math.random() * outVol);
-        // exchange done at most smallest of volume and out-done
-        var exDone  = Math.floor( Math.random() * Math.min(outDone, exVol));
+        var exVol   = Math.floor(Math.random() * (1+ Math.min(inVol, outVol)));
+        
+        // exchange done at least enough to allow for all remaining in and out
+        var exDone = Math.floor(Math.random() * (1+ exVol));
+        
+        // out done must at least account for the done exchanges
+        var outDMin = exDone;
+        // out done must leave room for for the remaining exchanges
+        var outDMax = exDone + outVol - exVol;
+        var outDone = Math.floor(Math.random() * (1+ outDMax-outDMin)) + outDMin;
+        
+        // not all freed exchanges must have been taken up already at in side
+        // but the left-over in can't be higher then left-over ex
+        var inDMax = exDone + inVol - exVol;
+        var inDone = Math.floor(Math.random() * (1+ inDMax));
+
         data.in   = inDone  + "/" + inVol;
         data.ex   = exDone  + "/" + exVol;
         data.out  = outDone + "/" + outVol;
