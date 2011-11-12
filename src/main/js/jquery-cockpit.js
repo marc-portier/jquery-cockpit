@@ -241,7 +241,7 @@
         "urgency-colors"    : ["rgba(230,0,0,0.7)",  "rgba(0,0,230,0.7)"],
         "percent-color"     : "rgba(255,255,255,0.5)",
         "radius-min"        :   5,
-        "volume-max"        :  50
+        "volume-max"        :  32
     }
     
     for (var i = 0; i< 23; i++) {
@@ -425,26 +425,27 @@
         "caption-offset"    :  28,
         "caption-linespace" :  24,
         "inset"             :   5,
-        "round"             : "20px",
+        "round"             : "25%",
+        "chart-round"       : "10px",
         "background-fill"   : "rgba(200,200,100, 0.5)",
         "background-stroke" : "rgba(200,200,100, 0.8)",
         "background-border" :   0,
-        "volume-max"        :  50,
+        "volume-max"        :  32,
         "grid-unit"         :  10,
         "grid-border"       :   1,
         "grid-style"        : "dashes", //TODO check if we can do this?
         "in-fill"           : "rgba(138,226, 52, 0.5)",
         "in-stroke"         : "rgba(138,226, 52, 0.8)",
-        "in-border"         :   1,
+        "in-border"         :   2,
         "ex-fill"           : "rgba(114,159,207, 0.5)",
         "ex-stroke"         : "rgba(114,159,207, 0.8)",
-        "ex-border"         :   1,
+        "ex-border"         :   2,
         "out-fill"          : "rgba(252,175, 62, 0.5)",
         "out-stroke"        : "rgba(252,175, 62, 0.8)",
-        "out-border"        :   1,
-        "done-fill"         : "rgba(200,200,200, 0.2)",
-        "done-stroke"       : "rgba(200,200,200, 0.2)",
-        "done-border"       :   1
+        "out-border"        :   2,
+        "done-fill"         : "rgba(255,255,255, 0.5)",
+        "done-stroke"       : "rgba(255,255,255, 0)",
+        "done-border"       :   2
     }
     
     ExchangeIndicator.demoData = function(me) {
@@ -582,15 +583,70 @@
         }
     }    
     
-    ExchangeIndicator.prototype.drawChart = function(name) {
-        var gc = this.gc;
+    
+    ExchangeIndicator.drawBox = function( me, style, box) {
+        var gc = me.gc;
         gc.save();
         try {
-        
-        
-    
+            gc.fillStyle   = me.config[style + "-fill"];
+            gc.strokeStyle = me.config[style + "-stroke"];
+            gc.lineWidth   = me.config[style + "-border"];
+            gc.translate((box.r+box.l)/2, (box.b+box.t)/2); // center
+            GCLIB.roundedRect(gc, box.r-box.l, box.b-box.t, box.rad);
+            gc.stroke();
+            gc.fill();
         } finally {
             gc.restore();
+        }
+    }
+    
+    ExchangeIndicator.prototype.drawChart = function(name) {
+    
+        var round = this.config["chart-round"];
+        if (this.in_volume > 0) { 
+            ExchangeIndicator.drawBox(this, "in", {
+                t: this.chart.m - this.in_volume * this.chart.u,
+                r: this.chart.r - this.chart.g,
+                b: this.chart.m,
+                l: this.chart.l + this.chart.g,
+                rad: round
+            });
+        }
+        if (this.out_volume > 0) {
+            ExchangeIndicator.drawBox(this, "out", {
+                t: this.chart.m,
+                r: this.chart.r - this.chart.g,
+                b: this.chart.m + this.out_volume * this.chart.u,
+                l: this.chart.l + this.chart.g,
+                rad: round
+            });
+        }
+        if (this.out_done > 0) {
+            ExchangeIndicator.drawBox(this, "done", {
+                t: this.chart.m + (this.out_volume - this.out_done)*this.chart.u,
+                r: this.chart.r - this.chart.g,
+                b: this.chart.m + this.out_volume * this.chart.u,
+                l: this.chart.l + this.chart.g,
+                rad: round
+            });
+        }
+        if (this.ex_volume > 0) {
+            ExchangeIndicator.drawBox(this, "ex", {
+                t: this.chart.m - (this.ex_volume - this.ex_done)*this.chart.u ,
+                r: this.chart.r - 2 * this.chart.g,
+                b: this.chart.m + this.ex_done * this.chart.u,
+                l: this.chart.l + 2* this.chart.g,
+                rad: round
+            });
+        }
+        if (this.in_done > 0) {
+            ExchangeIndicator.drawBox(this, "done", {
+                t: this.chart.m - this.in_volume * this.chart.u,
+                r: this.chart.r - this.chart.g,
+                b: this.chart.m - (this.in_volume - this.in_done)*this.chart.u,
+                l: this.chart.l + this.chart.g,
+                rad: round
+            });
         }
     }
     
@@ -621,7 +677,7 @@
             gc.translate(0,20);
             gc.fillText("text-color: " + this.config["text-color"], 0, 0);
             gc.translate(0,20);
-            gc.fillText("title: " + this.title, 0, 0);
+            gc.fillText("title: " + this.caption, 0, 0);
             gc.translate(0,20);
             gc.fillText("in: " + this.in_done + "/" + this.in_volume, 0, 0);
             gc.translate(0,20);
@@ -659,7 +715,6 @@
         gc.closePath();
     }
 
-    ROUND_RE = /^(\d+)\s*(%|px)$/;
     /** Draws a centered (ie at 0,0) rounded rectangle with the specified width,
      *  height and percentage of round-ness on the corners 
      */
