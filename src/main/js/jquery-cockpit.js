@@ -62,6 +62,25 @@
         return millis;
     }
 
+    SIZE_RE = /^(\d+)\s*(%|px)$/;
+    /** Draws a centered (ie at 0,0) rounded rectangle with the specified width,
+     *  height and percentage of round-ness on the corners 
+     */
+    function toSizeNum(size, total) {
+        var s = 0;
+        var m;
+        SIZE_RE.lastIndex =0;
+        if (size.constructor === String && (m=SIZE_RE.exec(size)) !== null) {
+            var pcnt = (m[2] == "%"); 
+            var num = m[1];
+            s = pcnt ? (num/100)*total : Number(num);
+        } else {
+           size = size || 0;
+           s = size * total;
+        }
+        return s;
+    }
+
     // -------------------------------------------------------------------------
     //
     // Common "BASE" class with reused static methods
@@ -215,7 +234,7 @@
         "caption-offset"    :  70,
         "caption-linespace" :  50,
         "inset"             :   5,
-        "round"             :   0.25,
+        "round"             :   0.25, //25%
         "background-fill"   : "rgba(200,200,100, 0.5)",
         "background-stroke" : "rgba(200,200,100, 0.8)",
         "background-border" :   0,
@@ -406,21 +425,22 @@
         "caption-offset"    :  28,
         "caption-linespace" :  24,
         "inset"             :   5,
-        "round"             :   0.25,
+        "round"             : "20px",
         "background-fill"   : "rgba(200,200,100, 0.5)",
         "background-stroke" : "rgba(200,200,100, 0.8)",
         "background-border" :   0,
         "volume-max"        :  50,
+        "grid-unit"         :  10,
         "grid-border"       :   1,
-        "grid-style"        : "dashes",
-        "in-fill"           : "rgba( 64,191,139, 0.5)",
-        "in-stroke"         : "rgba( 64,191,139, 0.8)",
+        "grid-style"        : "dashes", //TODO check if we can do this?
+        "in-fill"           : "rgba(138,226, 52, 0.5)",
+        "in-stroke"         : "rgba(138,226, 52, 0.8)",
         "in-border"         :   1,
-        "ex-fill"           : "rgba(149,125,160, 0.5)",
-        "ex-stroke"         : "rgba(149,125,160, 0.8)",
+        "ex-fill"           : "rgba(114,159,207, 0.5)",
+        "ex-stroke"         : "rgba(114,159,207, 0.8)",
         "ex-border"         :   1,
-        "out-fill"          : "rgba( 25,247,157, 0.5)",
-        "out-stroke"        : "rgba( 25,247,157, 0.8)",
+        "out-fill"          : "rgba(252,175, 62, 0.5)",
+        "out-stroke"        : "rgba(252,175, 62, 0.8)",
         "out-border"        :   1,
         "done-fill"         : "rgba(200,200,200, 0.2)",
         "done-stroke"       : "rgba(200,200,200, 0.2)",
@@ -471,21 +491,23 @@
         //calculations
         this.logosize = this.config["logo-size"];
         this.inset = this.config["inset"];
-        var offset = this.config["logo-offset"] + this.inset * 2;
-        var w = this.width  - (offset + this.inset * 2 + this.logosize/2);
-        var h = this.height - (offset + this.inset * 2);
+        var offset = this.config["logo-offset"];
+        var w = this.width  - 2 * this.inset - (3/2) * this.logosize - offset; 
+        var h = this.height - 2 * (this.inset + this.logosize);
         var grid = w/8;
-        var unit = h/this.config["volume-max"];
+        var unit = h/(2*this.config["volume-max"]);
+        var top = this.logosize + this.inset;
+        var left = offset + this.inset + this.logosize;
 
         this.chart = {
-            t: offset + this.logosize,       //top
-            r: offset + w,                   //right
-            b: offset + h,                   //bottom
-            l: offset + this.logosize,       //left
-            w: w,                            //width
-            h: h,                            //height
-            c: offset + this.logosize + w/2, //center
-            m: offset + h/2,                 //middle
+            t: top,         //top
+            r: left + w,    //right
+            b: top + h,     //bottom
+            l: left,        //left
+            w: w,           //width
+            h: h,           //height
+            c: left + w/2,  //center
+            m: top + h/2,   //middle
             g: grid,
             u: unit
         };
@@ -495,12 +517,13 @@
     }
     
     ExchangeIndicator.prototype.drawAxis = function() {
+        var gridDy = this.config["grid-unit"] * this.chart.u;
         var gc = this.gc;
         gc.save();
         try {
             //TODO nice to have gradients from ex-to-in and ex-to-out colors
-            gc.strokeStyle = this.config["ex-stroke"];
             gc.lineWidth = this.config["grid-border"];
+            gc.strokeStyle = this.config["ex-stroke"];
             
             gc.beginPath();
                 gc.moveTo(this.chart.l - this.logosize/2, 
@@ -510,10 +533,32 @@
                 gc.moveTo(this.chart.l - this.logosize/2,
                           this.chart.m + this.logosize/2);
                 gc.lineTo(this.chart.l - this.logosize/2, 
-                          this.chart.b - this.logosize);
+                          this.chart.b);
                 gc.moveTo(this.chart.l, this.chart.m );
                 gc.lineTo(this.chart.r, this.chart.m);
-                          
+            gc.closePath();  
+            gc.stroke();
+            
+            var y;
+            gc.strokeStyle = this.config["in-stroke"];
+            gc.beginPath();
+                for (y = this.chart.m - gridDy;
+                     y >= this.chart.t;
+                     y -= gridDy) {
+                    gc.moveTo(this.chart.l, y );
+                    gc.lineTo(this.chart.r, y);
+                }
+            gc.closePath();  
+            gc.stroke();
+
+            gc.strokeStyle = this.config["out-stroke"];
+            gc.beginPath();
+                for (y = this.chart.m + gridDy;
+                     y <= this.chart.b;
+                     y += gridDy) {
+                    gc.moveTo(this.chart.l, y );
+                    gc.lineTo(this.chart.r, y);
+                }
             gc.closePath();  
             gc.stroke();
             
@@ -523,11 +568,11 @@
             if (this.icon_in) {
                 GCLIB.image(gc, this.icon_in, this.logosize, this.logosize);
             }
-            gc.translate(0, this.chart.h/2 - this.logosize/2);
+            gc.translate(0, this.chart.h/2 + this.logosize/2);
             if (this.icon_ex) {
                 GCLIB.image(gc, this.icon_ex, this.logosize, this.logosize);
             }
-            gc.translate(0, this.chart.h/2 - this.logosize/2);
+            gc.translate(0, this.chart.h/2 + this.logosize/2);
             if (this.icon_out) {
                 GCLIB.image(gc, this.icon_out, this.logosize, this.logosize);
             }
@@ -614,16 +659,15 @@
         gc.closePath();
     }
 
+    ROUND_RE = /^(\d+)\s*(%|px)$/;
     /** Draws a centered (ie at 0,0) rounded rectangle with the specified width,
      *  height and percentage of round-ness on the corners 
      */
-    GCLIB.roundedRect = function(gc, width, height, rdpcnt) {
-        rdpcnt = rdpcnt || 0;
-
+    GCLIB.roundedRect = function(gc, width, height, round) {
         var w = width/2;
         var h = height/2;
-        var r = rdpcnt * Math.min(w,h);
-
+        var r = toSizeNum(round, Math.min(w,h));
+        
         gc.beginPath();
             if (r) {
                 gc.arc(-w + r, -h + r, r, -Math.PI  , -Math.PI/2, false);
